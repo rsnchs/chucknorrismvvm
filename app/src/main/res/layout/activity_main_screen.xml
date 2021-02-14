@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:animateLayoutChanges="true"
+    android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/tv_main_alert"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:paddingTop="@dimen/space_10dp"
+        android:paddingBottom="@dimen/space_15dp"
+        android:paddingStart="@dimen/space_20dp"
+        android:paddingEnd="@dimen/space_20dp"
+        android:text="@string/generic_error"
+        android:textColor="@color/white"
+        android:textSize="14sp"
+        android:background="@color/error_alert_color"
+        android:gravity="center"
+        />
+
+    <View
+        android:id="@+id/iv_main_alert_shadow"
+        android:layout_width="match_parent"
+        android:layout_height="8dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="@id/tv_main_alert"
+        app:layout_constraintTop_toTopOf="@id/tv_main_alert"
+        app:layout_constraintVertical_bias="1"
+        android:background="@drawable/vertical_shadow"
+        />
+
+    <androidx.constraintlayout.widget.Group
+        android:id="@+id/gr_main_alert"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        tools:visibility="visible"
+        app:constraint_referenced_ids="tv_main_alert,iv_main_alert_shadow"
+        />
+
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/nav_host_fragment"
+        android:name="androidx.navigation.fragment.NavHostFragment"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/no_dp"
+        app:defaultNavHost="true"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/iv_main_alert_shadow"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:navGraph="@navigation/nav_graph" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    app:startDestination="@id/jokeOptionsFragment">
+
+    <fragment
+        android:id="@+id/jokeOptionsFragment"
+        android:name="com.ronaldosanches.chucknorrisapitmvvm.presentation.jokes.screens.jokeoptions.JokeOptionsFragment"
+        android:label="fragment_main_screen"
+        tools:layout="@layout/fragment_joke_options" >
+        <action
+            android:id="@+id/action_jokeOptionsFragment_to_jokesCategoriesFragment"
+            app:destination="@id/jokesCategoriesFragment" />
+        <action
+            android:id="@+id/action_jokeOptionsFragment_to_jokesListFragment"
+            app:destination="@id/jokesListFragment" />
+        <action
+            android:id="@+id/action_jokeOptionsFragment_to_jokeSearchFragment"
+            app:destination="@id/jokeSearchFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/jokesCategoriesFragment"
+        android:name="com.ronaldosanches.chucknorrisapitmvvm.presentation.jokes.screens.jokecategories.JokesCategoriesFragment"
+        android:label="fragment_jokes_categories"
+        tools:layout="@layout/fragment_joke_categories">
+        <argument
+            android:name="listCategories"
+            app:argType="string[]" />
+    </fragment>
+    <fragment
+        android:id="@+id/jokesListFragment"
+        android:name="com.ronaldosanches.chucknorrisapitmvvm.presentation.jokes.screens.jokefavorites.JokesFavoritesFragment"
+        android:label="fragment_jokes_list"
+        tools:layout="@layout/fragment_jokes_favorites" >
+    </fragment>
+    <fragment
+        android:id="@+id/jokeSearchFragment"
+        android:name="com.ronaldosanches.chucknorrisapitmvvm.presentation.jokes.screens.jokesearch.JokeSearchFragment"
+        android:label="fragment_joke_search"
+        tools:layout="@layout/fragment_joke_search" >
+        <argument
+            android:name="query"
+            app:argType="string" />
+    </fragment>
+</navigation>

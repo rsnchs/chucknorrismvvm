@@ -1,0 +1,38 @@
+<resources>
+    <string name="app_name">ChuckNorrisApiMVVM</string>
+
+    <!-- shared prefs -->
+    <string name="shared_prefs_file_key">com.ronaldosanches.chucknorrisapiapp</string>
+    <!-- Main Screen -->
+    <string name="app_title">Chuck Norris API</string>
+    <string name="app_subtitle">Kotlin, Clean / MVVM, Testing</string>
+    <string name="random_joke_button_load_another_joke">load another</string>
+    <string name="joke_category_title">Category: %s</string>
+    <string name="content_description_search_icon">click to Search</string>
+    <string name="search_field_hint">Search for a Joke</string>
+    <string name="text_input_field_allowed_digits">"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"</string>
+    <string name="menu_choose_category">Choose Category</string>
+    <string name="menu_show_all_favorites">Show All Favorites</string>
+    <string name="error_too_short_search_query">Need at least three characters</string>
+    <string name="key_pref_night_mode">night_mode_key_value</string>
+
+    <!-- Categories Screen -->
+    <string name="categories_title">Categories</string>
+
+    <!-- Favorites Screen -->
+    <string name="favorites_title">Favorite Jokes</string>
+    <string name="no_item_found">You don\'t have jokes marked as favorite</string>
+
+    <!-- Search Screen -->
+    <string name="no_results_returned">No jokes were found with your search</string>
+
+    <!-- Share -->
+    <string name="share_title">Pick where you want to share it</string>
+    <string name="share_joke_wrapper">Here\'s a Chuck Norris Joke: %s - Thank the guys at https://api.chucknorris.io/ for it</string>
+
+    <!-- Error Messages -->
+
+    <!-- night mode -->
+    <string name="search_title">Search Results</string>
+    <string name="generic_error">An error occurred</string>
+</resources>

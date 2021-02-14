@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Text -->
+    <style name="Text">
+
+    </style>
+
+    <style name="Text.Centered">
+        <item name="android:textAlignment">center</item>
+    </style>
+
+    <style name="Text.Centered.PrimaryColor">
+        <item name="android:textColor">@color/text_color_primary</item>
+    </style>
+
+    <style name="Text.Centered.SecondaryColor">
+        <item name="android:textColor">@color/text_color_secondary</item>
+    </style>
+
+
+    <!-- Button -->
+    <style name="Button">
+
+    </style>
+
+    <style name="Button.IconOnly"
+        parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="iconPadding">0dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="android:paddingLeft">12dp</item>
+        <item name="android:paddingRight">12dp</item>
+        <item name="android:minWidth">48dp</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="elevation">0dp</item>
+        <item name="android:radius">@dimen/icon_size</item>
+    </style>
+
+    <style name="Button.IconOnly.HighLightOnClick">
+        <item name="iconTint">@color/selector_highlight_on_click</item>
+    </style>
+
+    <style name="Button.IconOnly.HighLightOnClick.Connection">
+        <item name="android:clickable">false</item>
+        <item name="icon">@drawable/ic_connection</item>
+        <item name="iconTint">@color/selector_connection</item>
+    </style>
+
+    <style name="Button.IconOnly.Favorite">
+        <item name="iconTint">@color/selector_favorite_button</item>
+    </style>
+
+    <style name="Button.HighLightOnClick" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="iconTint">@color/selector_highlight_on_click</item>
+    </style>
+
+</resources>
