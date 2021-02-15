@@ -42,7 +42,7 @@ class MainScreenActivity : BaseActivity(), IFragActivity {
         errorAlert.collect(lifecycleScope)
     }
 
-    private fun updateText(text: String) = runBlocking {
+    private fun updateText(text: String) {
         binding.tvMainAlert.text = text
     }
 
@@ -61,11 +61,9 @@ class MainScreenActivity : BaseActivity(), IFragActivity {
 
     private fun closeAlert() {
         binding.grMainAlert.visibility = View.GONE
-//        mIdlingResource?.setIdleState(false)
     }
 
     private fun openAlert() {
-//        mIdlingResource?.setIdleState(true)
         binding.grMainAlert.visibility = View.VISIBLE
     }
 }
