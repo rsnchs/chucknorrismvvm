@@ -38,6 +38,7 @@ class MainScreenActivityTest : BaseMethods() {
 
     @get:Rule
     val hiltRule = HiltAndroidRule(this)
+    
 
     @Inject lateinit var randomJoke: GetRandomJoke
     @Inject lateinit var networkInfo : NetworkInfo

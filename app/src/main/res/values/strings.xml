@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ChuckNorrisApiMVVM</string>
+    <string name="app_name">Chuck Norris Jokes</string>
 
     <!-- shared prefs -->
     <string name="shared_prefs_file_key">com.ronaldosanches.chucknorrisapiapp</string>

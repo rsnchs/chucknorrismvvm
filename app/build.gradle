@@ -5,6 +5,11 @@ plugins {
     id 'dagger.hilt.android.plugin'
     id 'androidx.navigation.safeargs.kotlin'
     id 'kotlin-parcelize'
+    id 'jacoco'
+}
+
+jacoco {
+    toolVersion = '0.8.2'
 }
 
 android {
@@ -53,8 +58,16 @@ android {
         }
         debug {
             debuggable true
+            testCoverageEnabled = true
         }
     }
+
+    testOptions.unitTests.all {
+        jacoco {
+            includeNoLocationClasses = true
+        }
+    }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -62,6 +75,57 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+}
+
+task jacocoTestReport { self ->
+    build.dependsOn self
+}
+
+android.testVariants.all {
+    def variant = it.testedVariant
+    def name = variant.name.capitalize()
+
+    tasks.create(name: "jacoco${name}TestReport", type: JacocoReport) { self ->
+        group = 'Reporting'
+        description = "Generates Jacoco coverage reports on the ${variant.name} variant"
+
+        reports {
+            xml.enabled = true
+            html.enabled = true
+        }
+
+        getSourceDirectories().setFrom(files(variant.sourceSets.collectMany({ it.java.source })))
+        getClassDirectories().setFrom(fileTree(dir: buildDir, includes: [
+                "intermediates/classes/${variant.name}/**",
+                "tmp/kotlin-classes/${variant.name}/**"
+        ], excludes: [
+                'android/**/*.*',
+                '**/R.class',
+                '**/R$*.class',
+                '**/BuildConfig.*',
+                '**/Manifest*.*',
+                '**/*Test*.*',
+                '**/*Module.*', // modules for Dagger.
+                '**/*Module$Companion.*', // modules for Dagger+Kotlin.
+                '**/*Dagger*.*', // Dagger auto-generated code.
+                '**/*MembersInjector*.*', // Dagger auto-generated code.
+                '**/*_Provide*Factory*.*',
+                '**/*_Factory.*', // Dagger auto-generated code
+        ]))
+        getExecutionData().setFrom(fileTree(dir: buildDir, includes: [
+                "jacoco/test${name}UnitTest.exec",
+                'outputs/code-coverage/connected/*coverage.ec'
+        ]))
+
+        doLast {
+            println "Wrote HTML coverage report to ${reports.html.destination}/index.html"
+            println "Wrote XML coverage report to ${reports.xml.destination}"
+        }
+
+        dependsOn "test${name}UnitTest", "create${name}CoverageReport"
+        jacocoTestReport.dependsOn self
+    }
+
 }
 
 dependencies {
