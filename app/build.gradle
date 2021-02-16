@@ -138,16 +138,15 @@ dependencies {
     implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutines_version"
     implementation "androidx.constraintlayout:constraintlayout:$constraint_version"
 
-    //navigation components
-    // Kotlin
+    //navigation
     implementation "androidx.navigation:navigation-fragment-ktx:$nav_version"
     implementation "androidx.navigation:navigation-ui-ktx:$nav_version"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-savedstate:$nav_saved_state_version"
 
-    //ktx
-    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$ktx_version"
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx:$ktx_version"
-    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$ktx_version"
+    //lifecycle
+    implementation "androidx.lifecycle:lifecycle-viewmodel-savedstate:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:$lifecycle_version"
+    implementation "androidx.lifecycle:lifecycle-livedata-ktx:$lifecycle_version"
 
     //retrofit
     implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
@@ -177,7 +176,7 @@ dependencies {
     kapt "androidx.hilt:hilt-compiler:$hilt_viewmodel_version"
 
     //unit testing
-    testImplementation 'junit:junit:4.13.1'
+    testImplementation 'junit:junit:4.13.2'
     //mockito
     testImplementation "com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0"
     testImplementation 'org.mockito:mockito-inline:2.13.0'
