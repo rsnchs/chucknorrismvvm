@@ -20,7 +20,7 @@ class ShowErrorAlert(
     private var currentlyShowing : Boolean = false
 
     fun addNewMessage(message: String) {
-        channel.offer(message)
+        channel.trySend(message)
     }
 
     fun collect(coroutineScope: CoroutineScope) = coroutineScope.launch {

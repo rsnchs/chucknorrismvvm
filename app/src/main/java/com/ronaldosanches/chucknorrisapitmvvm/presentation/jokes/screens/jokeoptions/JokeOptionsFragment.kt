@@ -49,9 +49,9 @@ class JokeOptionsFragment : BaseFragment(), IPositionClick {
     }
 
     override fun setupView() {
-        viewModel.createMenuOptions().observe(viewLifecycleOwner, {
+        viewModel.createMenuOptions().observe(viewLifecycleOwner) {
             (binding.rvJokeOptionsOptionsList.adapter as DynamicListAdapter).addResList(it)
-        })
+        }
 
         binding.rvJokeOptionsOptionsList.apply {
             this.layoutManager = LinearLayoutManager(requireContext())
@@ -72,8 +72,8 @@ class JokeOptionsFragment : BaseFragment(), IPositionClick {
 
         binding.inJokeOptionsRandomJokeContent.inRandomJokeJokeContent.btJokeContentFavorite
             .setOnSafeClickListener {
-                viewModel.handleFavoriteButtonClick().observe(viewLifecycleOwner, {
-                    when(it) {
+                viewModel.handleFavoriteButtonClick().observe(viewLifecycleOwner) {
+                    when (it) {
                         is ResultChuck.Loading -> showLoading()
                         is ResultChuck.Success -> {
                             hideLoading()
@@ -84,45 +84,46 @@ class JokeOptionsFragment : BaseFragment(), IPositionClick {
                             handleError.showError(it.error)
                         }
                     }
-                })
+                }
             }
 
         binding.inJokeOptionsRandomJokeContent.inRandomJokeJokeContent.btJokeContentShare
             .setOnSafeClickListener {
-                viewModel.shareJoke().observe(viewLifecycleOwner, {
+                viewModel.shareJoke().observe(viewLifecycleOwner) {
                     ShareJoke(this).create(it).build()
-                })
+                }
             }
 
         binding.inJokeOptionsRandomJokeContent.btRandomJokeLoadMore.setOnSafeClickListener {
             loadJokeFromApi(false)
         }
 
-        networkInfo.result.observe(viewLifecycleOwner, {
-            binding.inJokeOptionsTopMenu.btTopMenuConnection.isSelected = it == NetworkStatus.CONNECTED
-        })
+        networkInfo.result.observe(viewLifecycleOwner) {
+            binding.inJokeOptionsTopMenu.btTopMenuConnection.isSelected =
+                it == NetworkStatus.CONNECTED
+        }
 
         setFragmentResultListener(KEY_SELECTED_CATEGORY) {
                 requestKey, bundle -> viewModel.handleCategoryResult(requestKey,bundle)
-            .observe(viewLifecycleOwner, {
+            .observe(viewLifecycleOwner) {
                 it?.let {
                     viewModel.updateCategory(it)
                     loadJokeFromApi(false)
                 }
-            })
+            }
         }
 
-        viewModel.updateUICategory().observe(viewLifecycleOwner, {
+        viewModel.updateUICategory().observe(viewLifecycleOwner) {
             binding.inJokeOptionsRandomJokeContent.tvRandomJokeTitle
-                .text = getString(R.string.joke_category_title,it.capitalize(Locale.getDefault()))
-        })
+                .text = getString(R.string.joke_category_title, it.replaceFirstChar { char -> char.uppercase() })
+        }
 
-        viewModel.updateUIJoke().observe(viewLifecycleOwner, {
+        viewModel.updateUIJoke().observe(viewLifecycleOwner) {
             binding.inJokeOptionsRandomJokeContent.inRandomJokeJokeContent
                 .tvJokeContentJoke.text = it.value
             binding.inJokeOptionsRandomJokeContent.inRandomJokeJokeContent
                 .btJokeContentFavorite.isSelected = it.isFavorite
-        })
+        }
 
         loadJokeFromApi(true)
     }
@@ -137,8 +138,8 @@ class JokeOptionsFragment : BaseFragment(), IPositionClick {
     override fun positionClick(position: Int, text: String) {
         when(position) {
             Constants.Position.FIRST_POSITION -> {
-                viewModel.getCategoriesFromApi().observe(viewLifecycleOwner, {
-                    when(it) {
+                viewModel.getCategoriesFromApi().observe(viewLifecycleOwner) {
+                    when (it) {
                         is ResultChuck.Success -> {
                             hideLoading()
                             handleSuccessCategoriesResponse(it.data)
@@ -149,7 +150,7 @@ class JokeOptionsFragment : BaseFragment(), IPositionClick {
                         }
                         is ResultChuck.Loading -> showLoading()
                     }
-                })
+                }
             }
             else -> goToFavoritesScreen()
         }
@@ -162,8 +163,8 @@ class JokeOptionsFragment : BaseFragment(), IPositionClick {
     }
 
     private fun loadJokeFromApi(searchForStateSaved: Boolean) {
-        viewModel.getRandomJokeByCategory(searchForStateSaved).observe(viewLifecycleOwner, {
-            when(it) {
+        viewModel.getRandomJokeByCategory(searchForStateSaved).observe(viewLifecycleOwner) {
+            when (it) {
                 is ResultChuck.Loading -> showLoading()
                 is ResultChuck.Success -> {
                     hideLoading()
@@ -174,7 +175,7 @@ class JokeOptionsFragment : BaseFragment(), IPositionClick {
                     handleError.showError(it.error)
                 }
             }
-        })
+        }
     }
 
     private fun handleFavoriteSuccessfulResponse(result: Number) {
@@ -182,15 +183,15 @@ class JokeOptionsFragment : BaseFragment(), IPositionClick {
     }
 
     private fun validateSearchQuery(length: Int, func : (() -> Unit)? = null) =
-        viewModel.isSearchQueryValid(length).observe(viewLifecycleOwner, {
-            when(it) {
+        viewModel.isSearchQueryValid(length).observe(viewLifecycleOwner) {
+            when (it) {
                 false -> showSearchFieldInvalid()
                 true -> {
                     showSearchFieldValid()
                     func?.invoke()
                 }
             }
-        })
+        }
 
     private fun startTextChangeListener() {
         binding.etJokeOptionsSearch.addTextChangedListener(searchTextWatcher)

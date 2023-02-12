@@ -13,5 +13,5 @@ interface ChuckNorrisJokesRepository {
     suspend fun saveJokeToFavorites(joke: JokeResponse) : ResultChuck<Long>
     suspend fun deleteJokeFromFavorites(joke: JokeResponse) : ResultChuck<Int>
     suspend fun checkIfJokeIsFavorited(jokeId: String) : ResultChuck<Boolean>
-    fun getFavoriteJokes() : ResultChuck<LiveData<List<JokeResponse>>>
+            fun getFavoriteJokes() : ResultChuck<LiveData<List<JokeResponse>>>
 }

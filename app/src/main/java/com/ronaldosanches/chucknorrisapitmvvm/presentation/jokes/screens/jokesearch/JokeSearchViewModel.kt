@@ -40,6 +40,7 @@ class JokeSearchViewModel @Inject constructor(
             is ResultChuck.Success -> showSearchResult(searchResponse.data)
             is ResultChuck.Error -> Unit
             is ResultChuck.Loading -> showloading()
+            null -> Unit
         }
     }
 

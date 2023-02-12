@@ -12,7 +12,6 @@ import com.ronaldosanches.chucknorrisapitmvvm.presentation.jokes.base.BaseActivi
 import com.ronaldosanches.chucknorrisapitmvvm.presentation.jokes.callbacks.IFragActivity
 import com.ronaldosanches.chucknorrisapitmvvm.presentation.jokes.viewobjects.ShowErrorAlert
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.*
 
 
 @AndroidEntryPoint

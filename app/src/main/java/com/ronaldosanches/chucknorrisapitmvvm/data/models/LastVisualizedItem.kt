@@ -5,11 +5,13 @@ import androidx.room.ColumnInfo
 import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import androidx.room.RoomWarnings
 import com.ronaldosanches.chucknorrisapitmvvm.core.Constants
 import com.ronaldosanches.chucknorrisapitmvvm.domain.entities.JokeResponse
 import com.squareup.moshi.JsonClass
 import kotlinx.parcelize.Parcelize
 
+@SuppressWarnings(RoomWarnings.PRIMARY_KEY_FROM_EMBEDDED_IS_DROPPED)
 @Parcelize
 @JsonClass(generateAdapter = true)
 @Entity(tableName = Constants.Sqlite.LAST_VISUALIZED_TABLE)
