@@ -1,13 +1,22 @@
 package com.ronaldosanches.chucknorrisapitmvvm.presentation.jokes.screens.jokeoptions
 
 import android.os.Bundle
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.liveData
+import androidx.lifecycle.viewModelScope
 import com.ronaldosanches.chucknorrisapitmvvm.R
 import com.ronaldosanches.chucknorrisapitmvvm.core.Constants
 import com.ronaldosanches.chucknorrisapitmvvm.core.custom.ResultChuck
 import com.ronaldosanches.chucknorrisapitmvvm.core.custom.error.ErrorEntity
 import com.ronaldosanches.chucknorrisapitmvvm.domain.entities.JokeResponse
-import com.ronaldosanches.chucknorrisapitmvvm.domain.usecases.*
+import com.ronaldosanches.chucknorrisapitmvvm.domain.usecases.AddJokeToFavorites
+import com.ronaldosanches.chucknorrisapitmvvm.domain.usecases.CheckIfJokeIsFavorited
+import com.ronaldosanches.chucknorrisapitmvvm.domain.usecases.GetCategories
+import com.ronaldosanches.chucknorrisapitmvvm.domain.usecases.GetRandomJoke
+import com.ronaldosanches.chucknorrisapitmvvm.domain.usecases.GetRandomJokeByCategory
+import com.ronaldosanches.chucknorrisapitmvvm.domain.usecases.RemoveJokeFromFavorites
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -78,13 +87,13 @@ class JokeOptionsViewModel @Inject constructor(
         emit(ResultChuck.Loading(null))
         val lastSavedJoke = savedStateHandle.get<JokeResponse>(KEY_LAST_JOKE)
         if(lastSavedJoke != null) {
-                if(lastSavedJoke.isFavorite) {
-                    val amountOfItemsRemoved = removeJokeFromFavorites(lastSavedJoke)
-                    emit(amountOfItemsRemoved)
-                } else {
-                    val idAddedJokeId = addJokesToFavorites(lastSavedJoke)
-                    emit(idAddedJokeId)
-                }
+            if(lastSavedJoke.isFavorite) {
+                val amountOfItemsRemoved = removeJokeFromFavorites(lastSavedJoke)
+                emit(amountOfItemsRemoved)
+            } else {
+                val idAddedJokeId = addJokesToFavorites(lastSavedJoke)
+                emit(idAddedJokeId)
+            }
         } else {
             emit(ResultChuck.Error(ErrorEntity.NotFound))
         }

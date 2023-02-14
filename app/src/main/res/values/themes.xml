@@ -2,13 +2,14 @@
 
     <style name="Theme.ChuckNorrisApiMVVM" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Primary brand color. -->
-
         <item name="colorPrimary">@color/text_color_primary</item>
         <item name="colorPrimaryVariant">@color/text_color_secondary</item>
         <item name="colorOnPrimary">@color/white</item>
-        <!-- Secondary brand color. -->
         <item name="colorSecondary">@color/text_color_primary</item>
         <item name="colorSecondaryVariant">@color/pink_dark</item>
         <item name="colorOnSecondary">@color/black</item>
+        <item name="favoriteTrue">@color/pink</item>
+        <item name="favoriteFalse">@color/icon_color_primary</item>
+        <item name="primaryLight">@color/light_gray</item>
     </style>
 </resources>

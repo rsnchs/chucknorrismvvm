@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="favoriteTrue" format="color"/>
+    <attr name="favoriteFalse" format="color"/>
+    <attr name="primaryLight" format="color"/>
+</resources>
