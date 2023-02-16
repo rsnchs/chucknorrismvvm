@@ -4,34 +4,35 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.cardview.widget.CardView
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.runtime.setValue
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.getValue
 import androidx.compose.material.Card
 import androidx.compose.material.Divider
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.VerticalAlignmentLine
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.setFragmentResultListener
@@ -46,6 +47,7 @@ import com.ronaldosanches.chucknorrisapitmvvm.presentation.jokes.adapters.IPosit
 import com.ronaldosanches.chucknorrisapitmvvm.presentation.jokes.base.BaseFragment
 import com.ronaldosanches.chucknorrisapitmvvm.presentation.jokes.customviews.JokeCardContent
 import com.ronaldosanches.chucknorrisapitmvvm.presentation.jokes.customviews.MenuItem
+import com.ronaldosanches.chucknorrisapitmvvm.presentation.jokes.customviews.TopMenuContent
 import com.ronaldosanches.chucknorrisapitmvvm.presentation.jokes.customviews.getColor
 import com.ronaldosanches.chucknorrisapitmvvm.presentation.jokes.viewobjects.SearchTextWatcher
 import dagger.hilt.android.AndroidEntryPoint
@@ -86,38 +88,38 @@ class JokeOptionsFragment : BaseFragment(), IPositionClick {
                 painter = painterResource(id = R.drawable.bg_main),
                 contentDescription = "",
             )
+            TopMenuContent()
             Column (modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    text = stringResource(id = R.string.app_title),
-                    fontSize = dimensionResource(id = R.dimen.text_app_title).value.sp,
-                    fontWeight = FontWeight.Black,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            top = dimensionResource(id = R.dimen.space_150dp),
-                            start = dimensionResource(id = R.dimen.app_outside_margin)
-                        )
-                        .wrapContentWidth(Alignment.Start)
-                )
-                Text(
-                    text = stringResource(id = R.string.app_subtitle),
-                    color = colorResource(id = R.color.text_color_secondary),
-                    fontSize = dimensionResource(id = R.dimen.text_app_subtitle).value.sp,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(
-                            start = dimensionResource(id = R.dimen.app_outside_margin),
-                            end = dimensionResource(id = R.dimen.app_outside_margin)
-                        )
-                        .wrapContentWidth(Alignment.Start)
-                )
+                    Text(
+                        text = stringResource(id = R.string.app_title),
+                        fontSize = dimensionResource(id = R.dimen.text_app_title).value.sp,
+                        fontWeight = FontWeight.Black,
+                        modifier = Modifier
+                            .padding(
+                                top = dimensionResource(id = R.dimen.space_150dp),
+                                start = dimensionResource(id = R.dimen.app_outside_margin)
+                            )
+                            .wrapContentWidth(Alignment.Start)
+                    )
+                    Text(
+                        text = stringResource(id = R.string.app_subtitle),
+                        color = colorResource(id = R.color.text_color_secondary),
+                        fontSize = dimensionResource(id = R.dimen.text_app_subtitle).value.sp,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(
+                                start = dimensionResource(id = R.dimen.app_outside_margin),
+                                end = dimensionResource(id = R.dimen.app_outside_margin)
+                            )
+                            .wrapContentWidth(Alignment.Start)
+                    )
                 JokeCardContent(
                     showLoadMore = true,
                     showLoadMoreAction = { loadJokeFromApi(false)},
                     isJokeFavorite = false
                 )
 
-                CreateMenuOptions(listOf(R.string.app_title, R.string.app_subtitle))
+                CreateMenuOptions(listOf(R.string.menu_choose_category, R.string.menu_show_all_favorites))
 
                 CreateTextInput()
             }
@@ -129,10 +131,10 @@ class JokeOptionsFragment : BaseFragment(), IPositionClick {
         Card(
             shape = RoundedCornerShape(dimensionResource(id = R.dimen.card_corner_radius)),
             elevation = dimensionResource(id = R.dimen.card_elevation),
-            modifier = Modifier.padding(dimensionResource(id = R.dimen.space_10dp))
+            modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.space_10dp))
         ) {
             Column(
-                verticalArrangement = Arrangement.spacedBy(6.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = dimensionResource(id = R.dimen.space_10dp))
@@ -152,9 +154,20 @@ class JokeOptionsFragment : BaseFragment(), IPositionClick {
 
     @Composable
     fun CreateTextInput() {
+        var searchText by remember { mutableStateOf(TextFieldValue(String())) }
+
         TextField(
-            value = "valor",
-            onValueChange = {}
+            value = searchText,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(dimensionResource(id = R.dimen.space_10dp)),
+            onValueChange = { searchText = it },
+            placeholder = { Text(text = stringResource(id = R.string.search_field_hint))},
+            trailingIcon = {
+                IconButton(onClick = { /*TODO*/ }) {
+                    Icon(painter = painterResource(id = R.drawable.ic_search), contentDescription = null)
+                }
+            }
         )
     }
 

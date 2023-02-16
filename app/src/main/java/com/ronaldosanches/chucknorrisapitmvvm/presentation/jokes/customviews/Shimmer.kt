@@ -14,14 +14,14 @@ import androidx.compose.ui.unit.dp
 import com.ronaldosanches.chucknorrisapitmvvm.R
 
 @Composable
-fun LoadingShimmerEffect(showLoadMore: Boolean){
+fun ShimmerAnimate(view: @Composable (Brush) -> Unit){
     val gradient = listOf(
-        Color.LightGray.copy(alpha = 0.9f), //darker grey (90% opacity)
-        Color.LightGray.copy(alpha = 0.3f), //lighter grey (30% opacity)
-        Color.LightGray.copy(alpha = 0.9f)
+        Color.Gray.copy(alpha = 0.7f),
+        Color.Gray.copy(alpha = 0.3f),
+        Color.Gray.copy(alpha = 0.7f)
     )
 
-    val transition = rememberInfiniteTransition() // animate infinite times
+    val transition = rememberInfiniteTransition()
 
     val translateAnimation = transition.animateFloat( //animate the transition
         initialValue = 0f,
@@ -39,7 +39,7 @@ fun LoadingShimmerEffect(showLoadMore: Boolean){
         end = Offset(x = translateAnimation.value,
             y = translateAnimation.value)
     )
-    ShimmerJokeCard(showLoadMore, brush = brush)
+    view.invoke(brush)
 }
 
 @Composable

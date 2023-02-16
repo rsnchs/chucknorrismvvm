@@ -5,7 +5,7 @@
     <string name="shared_prefs_file_key">com.ronaldosanches.chucknorrisapiapp</string>
     <!-- Main Screen -->
     <string name="app_title">Chuck Norris API</string>
-    <string name="app_subtitle">Kotlin, Clean / MVVM, Testing</string>
+    <string name="app_subtitle">Kotlin, Clean / MVVM, \nTesting</string>
     <string name="random_joke_button_load_another_joke">load another</string>
     <string name="joke_category_title">Category: %s</string>
     <string name="content_description_search_icon">click to Search</string>

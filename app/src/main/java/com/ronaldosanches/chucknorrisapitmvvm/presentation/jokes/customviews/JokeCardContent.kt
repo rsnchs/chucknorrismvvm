@@ -17,14 +17,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 import com.ronaldosanches.chucknorrisapitmvvm.R
 
 @Composable
 fun JokeCardContent(
-    state: ChuckViewState = ChuckViewState.Normal,
+    state: ChuckViewState = ChuckViewState.Loading,
     showLoadMore: Boolean = false,
     isJokeFavorite: Boolean = false,
     showLoadMoreAction : (() -> Unit)? = null,
@@ -54,7 +54,9 @@ fun JokeCardContent(
 
 @Composable
 private fun JokeCardContentLoading(showLoadMore: Boolean) {
-    LoadingShimmerEffect(showLoadMore = showLoadMore)
+    ShimmerAnimate {
+        ShimmerJokeCard(showLoadMore = showLoadMore, brush = it)
+    }
 }
 
 @Composable
@@ -69,7 +71,6 @@ private fun JokeCardContentValid(
         fontSize = dimensionResource(id = R.dimen.text_app_subtitle).value.sp,
         modifier = Modifier.fillMaxWidth(),
         textAlign = TextAlign.Center,
-        fontWeight = FontWeight.Bold,
     )
     Text(
         text = "Texto da piada",
@@ -112,7 +113,7 @@ private fun JokeCardContentValid(
             onClick = { showLoadMoreAction?.invoke() },
             colors = ButtonDefaults.textButtonColors(contentColor = getColor(R.attr.colorPrimary))
         ) {
-            Text(text = "load another joke")
+            Text(text = stringResource(id = R.string.random_joke_button_load_another_joke))
             Icon(painter = painterResource(id = R.drawable.ic_refresh), contentDescription = "")
         }
     }
