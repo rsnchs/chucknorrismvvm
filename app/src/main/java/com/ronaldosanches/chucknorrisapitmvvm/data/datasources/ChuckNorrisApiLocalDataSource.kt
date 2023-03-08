@@ -13,7 +13,7 @@ import com.ronaldosanches.chucknorrisapitmvvm.domain.entities.JokeResponse
 @Dao
 interface ChuckNorrisApiLocalDataSource {
     @Query("SELECT * FROM ${Constants.Sqlite.JOKES_TABLE}")
-    fun getFavoriteJokes() : LiveData<List<JokeResponse>>
+    fun getFavoriteJokes() : List<JokeResponse>
 
     @Query("SELECT * FROM ${Constants.Sqlite.JOKES_TABLE} WHERE id = :id")
     suspend fun getJokeById(id: String) : JokeResponse?

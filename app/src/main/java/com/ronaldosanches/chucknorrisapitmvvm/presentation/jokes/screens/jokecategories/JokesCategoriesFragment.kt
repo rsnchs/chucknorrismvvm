@@ -4,22 +4,22 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.platform.ComposeView
 import androidx.core.os.bundleOf
 import androidx.fragment.app.setFragmentResult
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
-import androidx.recyclerview.widget.DividerItemDecoration
-import androidx.recyclerview.widget.LinearLayoutManager
-import com.ronaldosanches.chucknorrisapitmvvm.databinding.FragmentJokeCategoriesBinding
-import com.ronaldosanches.chucknorrisapitmvvm.presentation.jokes.adapters.DynamicListAdapter
-import com.ronaldosanches.chucknorrisapitmvvm.presentation.jokes.adapters.IPositionClick
+import com.ronaldosanches.chucknorrisapitmvvm.core.custom.ViewType
+import com.ronaldosanches.chucknorrisapitmvvm.core.theme.ChuckNorrisApiTheme
 import com.ronaldosanches.chucknorrisapitmvvm.presentation.jokes.base.BaseFragment
+import com.ronaldosanches.chucknorrisapitmvvm.presentation.jokes.customviews.DynamicListItems
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 
 @AndroidEntryPoint
-class JokesCategoriesFragment : BaseFragment(), IPositionClick {
+class JokesCategoriesFragment : BaseFragment() {
 
     companion object {
         private const val KEY_SELECTED_CATEGORY = "selected_category_result_key"
@@ -27,30 +27,34 @@ class JokesCategoriesFragment : BaseFragment(), IPositionClick {
     }
 
     private val categoriesResponse : JokesCategoriesFragmentArgs by navArgs()
-    private lateinit var binding: FragmentJokeCategoriesBinding
-    @Inject lateinit var listAdapter : DynamicListAdapter
     private val viewModel : JokeCategoriesViewModel by viewModels()
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View {
-        binding = FragmentJokeCategoriesBinding.inflate(layoutInflater)
-        return binding.root
+        return ComposeView(requireContext()).apply {
+            setContent {
+                ChuckNorrisApiTheme {
+                    CategoriesMenu(viewModel.categoriesResponse.observeAsState().value)
+                }
+            }
+        }
     }
 
     override fun setupView() {
-        binding.rvCategoriesLayout.apply {
-            this.layoutManager = LinearLayoutManager(requireContext())
-            this.adapter = listAdapter
-            addItemDecoration(DividerItemDecoration(requireContext(),
-                (layoutManager as LinearLayoutManager).orientation))
-        }
-
-        viewModel.createCategoriesMenu(categoriesResponse.listCategories).observe(viewLifecycleOwner, {
-            (binding.rvCategoriesLayout.adapter as DynamicListAdapter).updateList(it)
-        })
+        viewModel.createCategoriesMenu(categoriesResponse.listCategories)
     }
 
-    override fun positionClick(position: Int, text: String) {
+    @Composable
+    fun CategoriesMenu(value: List<ViewType>?) {
+        value ?: return
+        DynamicListItems(
+            list = value,
+            showDivider = true,
+            menuItemClick = ::positionClick
+        )
+    }
+
+    private fun positionClick(text: String) {
         setFragmentResult(KEY_SELECTED_CATEGORY, bundleOf(KEY_SELECTED_CATEGORY_STRING to text))
         findNavController().popBackStack()
     }

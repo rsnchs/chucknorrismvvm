@@ -5,7 +5,6 @@ import com.ronaldosanches.chucknorrisapitmvvm.domain.entities.JokeResponse
 import com.ronaldosanches.chucknorrisapitmvvm.domain.repositories.ChuckNorrisJokesRepository
 
 class GetRandomJokeByCategory(val repository: ChuckNorrisJokesRepository) {
-
     suspend operator fun invoke(category: String): ResultChuck<JokeResponse> {
         return repository.getRandomJokeByCategory(category)
     }

@@ -2,21 +2,23 @@ package com.ronaldosanches.chucknorrisapitmvvm.presentation.jokes.screens.jokeop
 
 import android.os.Bundle
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
-import com.ronaldosanches.chucknorrisapitmvvm.R
 import com.ronaldosanches.chucknorrisapitmvvm.core.Constants
+import com.ronaldosanches.chucknorrisapitmvvm.core.custom.ChuckSearch
 import com.ronaldosanches.chucknorrisapitmvvm.core.custom.ResultChuck
 import com.ronaldosanches.chucknorrisapitmvvm.core.custom.error.ErrorEntity
+import com.ronaldosanches.chucknorrisapitmvvm.domain.entities.JokeOptionsMenu
 import com.ronaldosanches.chucknorrisapitmvvm.domain.entities.JokeResponse
-import com.ronaldosanches.chucknorrisapitmvvm.domain.usecases.AddJokeToFavorites
-import com.ronaldosanches.chucknorrisapitmvvm.domain.usecases.CheckIfJokeIsFavorited
+import com.ronaldosanches.chucknorrisapitmvvm.domain.usecases.CheckIfJokeIsFavorite
 import com.ronaldosanches.chucknorrisapitmvvm.domain.usecases.GetCategories
+import com.ronaldosanches.chucknorrisapitmvvm.domain.usecases.GetJokeOptionsMenu
 import com.ronaldosanches.chucknorrisapitmvvm.domain.usecases.GetRandomJoke
 import com.ronaldosanches.chucknorrisapitmvvm.domain.usecases.GetRandomJokeByCategory
-import com.ronaldosanches.chucknorrisapitmvvm.domain.usecases.RemoveJokeFromFavorites
+import com.ronaldosanches.chucknorrisapitmvvm.domain.usecases.ToggleJokeToFavorites
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -27,9 +29,9 @@ class JokeOptionsViewModel @Inject constructor(
     val randomJoke: GetRandomJoke,
     val randomJokeByCategory: GetRandomJokeByCategory,
     val getCategories: GetCategories,
-    val addJokesToFavorites: AddJokeToFavorites,
-    val jokeIsFavorited: CheckIfJokeIsFavorited,
-    val removeJokeFromFavorites: RemoveJokeFromFavorites,
+    val toggleJokeToFavorites: ToggleJokeToFavorites,
+    val jokeIsFavorited: CheckIfJokeIsFavorite,
+    val getJokeOptionsMenu: GetJokeOptionsMenu,
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -41,74 +43,92 @@ class JokeOptionsViewModel @Inject constructor(
         private val INTERVAL_INVALID_SEARCH_LENGTH = 0..2
     }
 
+//    var jokeState by mutableStateOf<ResultChuck<JokeResponse>>(ResultChuck.Loading())
+//        private set
+
+    private val _jokeState : MutableLiveData<ResultChuck<JokeResponse>> = MutableLiveData(ResultChuck.Loading())
+    val jokeState : LiveData<ResultChuck<JokeResponse>> get() = _jokeState
+
+    private val _jokeOptionsMenu : MutableLiveData<List<JokeOptionsMenu>?> = MutableLiveData(null)
+    val jokeOptionsMenu : LiveData<List<JokeOptionsMenu>?> get() = _jokeOptionsMenu
+
+    private val _categoriesResponse : MutableLiveData<ResultChuck<List<String>>?> = MutableLiveData(null)
+    val categoriesResponse : LiveData<ResultChuck<List<String>>?> get() = _categoriesResponse
+
+    private val _searchState : MutableLiveData<ChuckSearch> = MutableLiveData(ChuckSearch.Valid(String()))
+    val searchState : LiveData<ChuckSearch> get() = _searchState
+
     init {
         updateCategory(Constants.CustomAttributes.CATEGORY_ALL)
     }
 
     var coroutineContext = viewModelScope.coroutineContext + Dispatchers.IO
 
-    fun getRandomJokeByCategory(useStateSaved: Boolean) = liveData(coroutineContext) {
+    fun getRandomJokeByCategory(useStateSaved: Boolean) = viewModelScope.launch {
         val lastSavedJoke = savedStateHandle.get<JokeResponse>(KEY_LAST_JOKE)
         if(useStateSaved && lastSavedJoke != null) {
-            emit(ResultChuck.Success(lastSavedJoke))
+            _jokeState.postValue(ResultChuck.Success(lastSavedJoke))
         } else {
-            emit(ResultChuck.Loading(null))
+            _jokeState.postValue(ResultChuck.Loading())
             when(savedStateHandle.get<String>(KEY_LAST_CATEGORY_PICKED)) {
                 Constants.CustomAttributes.CATEGORY_ALL -> {
                     val randomJoke = randomJoke()
-                    emit(randomJoke)
+                    _jokeState.postValue(randomJoke)
                 }
                 else ->{
                     val category = savedStateHandle.get<String>(KEY_LAST_CATEGORY_PICKED)
                     val randomJoke = randomJokeByCategory(category = category as String)
-                    emit(randomJoke)
+                    _jokeState.postValue(randomJoke)
                 }
             }
         }
     }
 
-    fun getCategoriesFromApi() =  liveData<ResultChuck<List<String>>>(coroutineContext) {
-        emit(ResultChuck.Loading(null))
+    fun getCategoriesFromApi() = viewModelScope.launch {
+        _categoriesResponse.postValue(ResultChuck.Loading())
+        _jokeState.postValue(ResultChuck.Loading())
         val categories = getCategories()
-        emit(categories)
+        _categoriesResponse.postValue(categories)
     }
 
-    fun checkIfJokeIsFavorited() = viewModelScope.launch {
-        val lastSavedJoke = savedStateHandle.get<JokeResponse>(KEY_LAST_JOKE)
-        lastSavedJoke?.id?.let {
-            when(val response = jokeIsFavorited(it)) {
-                is ResultChuck.Success -> updateFavoriteState(response.data)
-                else -> Unit
-            }
-        }
-    }
-
-    fun handleFavoriteButtonClick() = liveData<ResultChuck<out Number>>(coroutineContext) {
-        emit(ResultChuck.Loading(null))
+    fun checkIfJokeIsFavorite() = viewModelScope.launch {
         val lastSavedJoke = savedStateHandle.get<JokeResponse>(KEY_LAST_JOKE)
         if(lastSavedJoke != null) {
-            if(lastSavedJoke.isFavorite) {
-                val amountOfItemsRemoved = removeJokeFromFavorites(lastSavedJoke)
-                emit(amountOfItemsRemoved)
-            } else {
-                val idAddedJokeId = addJokesToFavorites(lastSavedJoke)
-                emit(idAddedJokeId)
+            val isFavorite = jokeIsFavorited(lastSavedJoke.id)
+            if(isFavorite is ResultChuck.Success) {
+                _jokeState.postValue(
+                    ResultChuck.Success(lastSavedJoke.copy(isFavorite = isFavorite.success()))
+                )
             }
-        } else {
-            emit(ResultChuck.Error(ErrorEntity.NotFound))
         }
     }
 
-    fun createMenuOptions() = liveData {
-        val listItem = listOf(R.string.menu_choose_category, R.string.menu_show_all_favorites)
-        emit(listItem)
+    fun handleFavoriteButtonClick() = viewModelScope.launch {
+        println("estado anterior: ${_jokeState.value}")
+        val lastSavedJoke = savedStateHandle.get<JokeResponse>(KEY_LAST_JOKE)
+        if(lastSavedJoke != null) {
+            val jokeResponse = toggleJokeToFavorites(lastSavedJoke)
+            if(jokeResponse is ResultChuck.Error) {
+                _jokeState.postValue(ResultChuck.Error(jokeResponse.error))
+            } else {
+                _jokeState.postValue(jokeResponse)
+                println("novo estado: ${_jokeState.value}")
+            }
+        } else {
+            _jokeState.postValue(ResultChuck.Error(ErrorEntity.NotFound))
+        }
     }
 
-    fun isSearchQueryValid(textLength: Int) = liveData {
-        if(textLength in INTERVAL_INVALID_SEARCH_LENGTH) {
-            emit(false)
+    fun createMenuOptions() = viewModelScope.launch {
+        val menuItems = getJokeOptionsMenu()
+        _jokeOptionsMenu.postValue(menuItems)
+    }
+
+    fun isSearchQueryValid(text: String) {
+        if(text.length in INTERVAL_INVALID_SEARCH_LENGTH) {
+            _searchState.postValue(ChuckSearch.Invalid(text))
         } else {
-            emit(true)
+            _searchState.postValue(ChuckSearch.Valid(text))
         }
     }
 
@@ -129,21 +149,15 @@ class JokeOptionsViewModel @Inject constructor(
         return savedStateHandle.getLiveData(KEY_LAST_CATEGORY_PICKED)
     }
 
-    fun updateUIJoke(): LiveData<JokeResponse> {
-        return savedStateHandle.getLiveData(KEY_LAST_JOKE)
-    }
-
-    fun updateFavoriteState(isFavorite: Boolean) {
-        val joke = savedStateHandle.get<JokeResponse?>(KEY_LAST_JOKE)
-        joke?.isFavorite = isFavorite
-        savedStateHandle.set(KEY_LAST_JOKE,joke)
-    }
-
     fun updateCategory(category: String) {
         savedStateHandle[KEY_LAST_CATEGORY_PICKED] = category
     }
 
     fun updateLastJoke(joke: JokeResponse) {
         savedStateHandle[KEY_LAST_JOKE] = joke
+    }
+
+    fun resetCategories() {
+        _categoriesResponse.postValue(null)
     }
 }

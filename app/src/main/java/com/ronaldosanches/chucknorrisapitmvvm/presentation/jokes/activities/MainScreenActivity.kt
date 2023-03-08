@@ -23,7 +23,6 @@ class MainScreenActivity : BaseActivity(), IFragActivity {
 
     private val errorAlert = ShowErrorAlert(::openAlert, ::closeAlert, ::updateText)
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState ?: intent.getBundleExtra(ACTIVITY_STATE_SAVED))
         changeToSelectedTheme()

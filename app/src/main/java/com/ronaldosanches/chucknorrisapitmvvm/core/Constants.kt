@@ -35,6 +35,7 @@ object Constants {
         const val SECTION_TITLE = 4
         const val WARNING = 5
         const val LOADING = 6
+        const val ERROR = 7
     }
 
     object NightMode {

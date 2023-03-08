@@ -13,14 +13,20 @@ import dagger.hilt.android.scopes.ActivityRetainedScoped
 class UseCaseModule {
     @Provides
     @ActivityRetainedScoped
-    fun providesAddJokeToFavorites(repository: ChuckNorrisJokesRepository) : AddJokeToFavorites {
-        return AddJokeToFavorites(repository)
+    fun providesJokeOptionsMenu() : GetJokeOptionsMenu {
+        return GetJokeOptionsMenu()
     }
+    @Provides
+    @ActivityRetainedScoped
+    fun providesAddJokeToFavorites(repository: ChuckNorrisJokesRepository, checkIfJokeIsFavorite: CheckIfJokeIsFavorite) : AddJokeToFavorites {
+        return AddJokeToFavorites(repository, checkIfJokeIsFavorite)
+    }
+
 
     @Provides
     @ActivityRetainedScoped
-    fun providesCheckIfJokeIsFavorited(repository: ChuckNorrisJokesRepository) : CheckIfJokeIsFavorited {
-        return CheckIfJokeIsFavorited(repository)
+    fun providesCheckIfJokeIsFavorited(repository: ChuckNorrisJokesRepository) : CheckIfJokeIsFavorite {
+        return CheckIfJokeIsFavorite(repository)
     }
 
     @Provides
@@ -55,7 +61,17 @@ class UseCaseModule {
 
     @Provides
     @ActivityRetainedScoped
-    fun providesRemoveJokesFromFavorites(repository: ChuckNorrisJokesRepository) : RemoveJokeFromFavorites {
-        return RemoveJokeFromFavorites(repository)
+    fun providesRemoveJokesFromFavorites(repository: ChuckNorrisJokesRepository, checkIfJokeIsFavorite: CheckIfJokeIsFavorite) : RemoveJokeFromFavorites {
+        return RemoveJokeFromFavorites(repository, checkIfJokeIsFavorite)
     }
+
+    @Provides
+    @ActivityRetainedScoped
+    fun providesToggleToFavorites(addJokeToFavorites: AddJokeToFavorites, removeJokeFromFavorites: RemoveJokeFromFavorites) : ToggleJokeToFavorites {
+        return ToggleJokeToFavorites(addJokeToFavorites, removeJokeFromFavorites)
+    }
+
+    @Provides
+    @ActivityRetainedScoped
+    fun providesCategories() = CreateCategoriesMenu()
 }

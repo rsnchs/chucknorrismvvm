@@ -1,6 +1,5 @@
 package com.ronaldosanches.chucknorrisapitmvvm.domain.repositories
 
-import androidx.lifecycle.LiveData
 import com.ronaldosanches.chucknorrisapitmvvm.core.custom.ResultChuck
 import com.ronaldosanches.chucknorrisapitmvvm.domain.entities.JokeResponse
 import com.ronaldosanches.chucknorrisapitmvvm.domain.entities.SearchResponse
@@ -13,5 +12,5 @@ interface ChuckNorrisJokesRepository {
     suspend fun saveJokeToFavorites(joke: JokeResponse) : ResultChuck<Long>
     suspend fun deleteJokeFromFavorites(joke: JokeResponse) : ResultChuck<Int>
     suspend fun checkIfJokeIsFavorited(jokeId: String) : ResultChuck<Boolean>
-            fun getFavoriteJokes() : ResultChuck<LiveData<List<JokeResponse>>>
+    fun getFavoriteJokes() : ResultChuck<List<JokeResponse>>
 }

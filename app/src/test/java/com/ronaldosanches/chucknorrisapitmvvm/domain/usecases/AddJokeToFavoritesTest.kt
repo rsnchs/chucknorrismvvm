@@ -1,31 +1,78 @@
 package com.ronaldosanches.chucknorrisapitmvvm.domain.usecases
 
-import com.nhaarman.mockitokotlin2.any
-import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.whenever
+import com.ronaldosanches.chucknorrisapitmvvm.core.custom.ResultChuck
+import com.ronaldosanches.chucknorrisapitmvvm.core.custom.error.ErrorEntity
+import com.ronaldosanches.chucknorrisapitmvvm.domain.entities.JokeResponse
+import com.ronaldosanches.chucknorrisapitmvvm.domain.repositories.ChuckNorrisJokesRepository
+import io.mockk.MockKAnnotations
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.impl.annotations.MockK
 import org.junit.Assert.assertEquals
-import kotlinx.coroutines.test.runBlockingTest
+import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 
 class AddJokeToFavoritesTest : UseCaseBaseTest() {
 
-    lateinit var addJokesToFavorites: AddJokeToFavorites
+    @MockK private lateinit var repository: ChuckNorrisJokesRepository
+    @MockK private lateinit var checkIfJokeIsFavorite: CheckIfJokeIsFavorite
+    private lateinit var addJokesToFavorites: AddJokeToFavorites
+
 
     @Before
     override fun setup() {
-        super.setup()
-        addJokesToFavorites = AddJokeToFavorites(repository)
+        MockKAnnotations.init(this)
+        addJokesToFavorites = AddJokeToFavorites(repository, checkIfJokeIsFavorite)
+        coEvery { repository.saveJokeToFavorites(any()) } answers { ResultChuck.Success(0L) }
+        coEvery { checkIfJokeIsFavorite(any()) } answers { ResultChuck.Success(false) }
     }
 
     @Test
-    fun `adding joke to favorites should return added item id and trigger method`() = runBlockingTest {
-        //arrange
-        whenever(repository.saveJokeToFavorites(mockJokeResponse)).thenReturn(successfulAddedFavoritesResponse)
+    fun `when start class should save joke and check if it's favorite`() = runTest {
         //act
-        fun response() = suspend { addJokesToFavorites(mockJokeResponse) }
+        addJokesToFavorites(mockJokeResponse)
+
+        coVerify { repository.saveJokeToFavorites(mockJokeResponse) }
+        coVerify { checkIfJokeIsFavorite(mockJokeResponse.id) }
+    }
+
+    @Test
+    fun `when check favorite returns error should emit error`() = runTest {
+        //arrange
+        coEvery { checkIfJokeIsFavorite(any()) } answers { ResultChuck.Error(ErrorEntity.NotFound)}
+        val expected = ResultChuck.Error<JokeResponse>(ErrorEntity.NotFound)
+
+        //act
+        val actual = addJokesToFavorites(mockJokeResponse)
+
         //assert
-        assertEquals(response().invoke(),successfulAddedFavoritesResponse)
-        verify(repository).saveJokeToFavorites(any())
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `when joke is favorite true should emit joke favorite true`() = runTest {
+        //arrange
+        coEvery { checkIfJokeIsFavorite(any()) } answers { ResultChuck.Success(true) }
+        val expected = ResultChuck.Success(mockJokeResponse.copy(isFavorite = true))
+
+        //act
+        val actual = addJokesToFavorites(mockJokeResponse)
+
+        //assert
+        assertEquals(expected, actual)
+    }
+
+    @Test
+    fun `when joke is favorite false should emit joke favorite false`() = runTest {
+        //arrange
+        coEvery { checkIfJokeIsFavorite(any()) } answers { ResultChuck.Success(false) }
+        val expected = ResultChuck.Success(mockJokeResponse.copy(isFavorite = false))
+
+        //act
+        val actual = addJokesToFavorites(mockJokeResponse)
+
+        //assert
+        assertEquals(expected, actual)
     }
 }

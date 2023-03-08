@@ -5,61 +5,50 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.runtime.setValue
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.runtime.getValue
 import androidx.compose.material.Card
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
+import androidx.compose.material.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import com.ronaldosanches.chucknorrisapitmvvm.R
-import com.ronaldosanches.chucknorrisapitmvvm.core.Constants
+import com.ronaldosanches.chucknorrisapitmvvm.core.custom.ChuckSearch
 import com.ronaldosanches.chucknorrisapitmvvm.core.custom.ResultChuck
 import com.ronaldosanches.chucknorrisapitmvvm.core.platform.NetworkInfo
-import com.ronaldosanches.chucknorrisapitmvvm.databinding.FragmentJokeOptionsBinding
-import com.ronaldosanches.chucknorrisapitmvvm.presentation.jokes.adapters.DynamicListAdapter
-import com.ronaldosanches.chucknorrisapitmvvm.presentation.jokes.adapters.IPositionClick
+import com.ronaldosanches.chucknorrisapitmvvm.core.theme.ChuckNorrisApiTheme
+import com.ronaldosanches.chucknorrisapitmvvm.domain.entities.JokeOptionsMenu
+import com.ronaldosanches.chucknorrisapitmvvm.domain.entities.JokeResponse
 import com.ronaldosanches.chucknorrisapitmvvm.presentation.jokes.base.BaseFragment
 import com.ronaldosanches.chucknorrisapitmvvm.presentation.jokes.customviews.JokeCardContent
 import com.ronaldosanches.chucknorrisapitmvvm.presentation.jokes.customviews.MenuItem
-import com.ronaldosanches.chucknorrisapitmvvm.presentation.jokes.customviews.TopMenuContent
-import com.ronaldosanches.chucknorrisapitmvvm.presentation.jokes.customviews.getColor
-import com.ronaldosanches.chucknorrisapitmvvm.presentation.jokes.viewobjects.SearchTextWatcher
+import com.ronaldosanches.chucknorrisapitmvvm.presentation.jokes.customviews.TopBarStatus
+import com.ronaldosanches.chucknorrisapitmvvm.presentation.jokes.viewobjects.ShareJoke
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class JokeOptionsFragment : BaseFragment(), IPositionClick {
+class JokeOptionsFragment : BaseFragment() {
 
-    private lateinit var binding: FragmentJokeOptionsBinding
     private val viewModel: JokeOptionsViewModel by viewModels()
-    private val searchTextWatcher by lazy { SearchTextWatcher(::validateSearchQuery) }
-    @Inject lateinit var listAdapter : DynamicListAdapter
     @Inject lateinit var networkInfo : NetworkInfo
 
     companion object {
@@ -69,83 +58,113 @@ class JokeOptionsFragment : BaseFragment(), IPositionClick {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?): View {
-        super.onCreateView(inflater, container, savedInstanceState)
-        binding  = FragmentJokeOptionsBinding.inflate(layoutInflater).apply {
-            composeView.setContent {
-                MaterialTheme {
-                    HeaderOptions()
+        return ComposeView(requireContext()).apply {
+            setContent {
+                ChuckNorrisApiTheme {
+                    JokeOptionsScreen()
                 }
             }
         }
+    }
 
-        return binding.root
+    private fun onThemeToggle() {
+        rotateNightTheme { }
     }
 
     @Composable
-    fun HeaderOptions() {
-        Box(Modifier.fillMaxSize()) {
+    fun JokeOptionsScreen() {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(ChuckNorrisApiTheme.colors.bgColor)
+        ) {
+            val bgImageRes = if(isSystemInDarkTheme()) R.drawable.bg_main_dark else R.drawable.bg_main
             Image(
-                painter = painterResource(id = R.drawable.bg_main),
-                contentDescription = "",
+                painter = painterResource(id = bgImageRes),
+                contentDescription = null,
             )
-            TopMenuContent()
+            TopBarStatus(viewModel.jokeState.observeAsState().value, networkInfo.result.observeAsState().value, ::onThemeToggle)
             Column (modifier = Modifier.fillMaxWidth()) {
-                    Text(
-                        text = stringResource(id = R.string.app_title),
-                        fontSize = dimensionResource(id = R.dimen.text_app_title).value.sp,
-                        fontWeight = FontWeight.Black,
-                        modifier = Modifier
-                            .padding(
-                                top = dimensionResource(id = R.dimen.space_150dp),
-                                start = dimensionResource(id = R.dimen.app_outside_margin)
-                            )
-                            .wrapContentWidth(Alignment.Start)
-                    )
-                    Text(
-                        text = stringResource(id = R.string.app_subtitle),
-                        color = colorResource(id = R.color.text_color_secondary),
-                        fontSize = dimensionResource(id = R.dimen.text_app_subtitle).value.sp,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(
-                                start = dimensionResource(id = R.dimen.app_outside_margin),
-                                end = dimensionResource(id = R.dimen.app_outside_margin)
-                            )
-                            .wrapContentWidth(Alignment.Start)
-                    )
-                JokeCardContent(
-                    showLoadMore = true,
-                    showLoadMoreAction = { loadJokeFromApi(false)},
-                    isJokeFavorite = false
+                Text(
+                    text = stringResource(id = R.string.app_title),
+                    style = ChuckNorrisApiTheme.typography.title,
+                    color = ChuckNorrisApiTheme.colors.titleColor,
+                    modifier = Modifier
+                        .padding(
+                            top = ChuckNorrisApiTheme.dimensions.jokeOptionsMargin,
+                            start = ChuckNorrisApiTheme.dimensions.defaultSpace,
+                        )
+                        .wrapContentWidth(Alignment.Start)
+                )
+                Text(
+                    text = stringResource(id = R.string.app_subtitle),
+                    color = ChuckNorrisApiTheme.colors.textColor,
+                    style = ChuckNorrisApiTheme.typography.subtitle,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = ChuckNorrisApiTheme.dimensions.defaultSpace)
+                        .wrapContentWidth(Alignment.Start)
                 )
 
-                CreateMenuOptions(listOf(R.string.menu_choose_category, R.string.menu_show_all_favorites))
+                JokeCardContent(
+                    viewModel.updateUICategory().observeAsState().value,
+                    viewModel.jokeState.observeAsState().value,
+                    showLoadMore = true,
+                    showLoadMoreAction = { viewModel.getRandomJokeByCategory(false) },
+                    shareJoke = ::shareJoke,
+                    favoriteClick = ::clickFavorite
+                )
 
-                CreateTextInput()
+                CreateMenuOptions(viewModel.jokeOptionsMenu.observeAsState().value, ::handleMenuOptionsClick)
+
+                CreateTextInput(viewModel.searchState.observeAsState().value, ::validateSearchQuery, ::searchJoke)
             }
         }
     }
 
+    private fun searchJoke(query: String) {
+        goToSearchScreen(query)
+    }
+
+    private fun validateSearchQuery(query: String) {
+        viewModel.isSearchQueryValid(query)
+    }
+
+    private fun clickFavorite(joke: JokeResponse) {
+        viewModel.handleFavoriteButtonClick()
+    }
+
+    private fun shareJoke(joke: JokeResponse) {
+        viewModel.shareJoke().observe(viewLifecycleOwner) {
+            ShareJoke(this).create(it).build()
+        }
+    }
+
     @Composable
-    fun CreateMenuOptions(list: List<Int>) {
-        Card(
-            shape = RoundedCornerShape(dimensionResource(id = R.dimen.card_corner_radius)),
-            elevation = dimensionResource(id = R.dimen.card_elevation),
-            modifier = Modifier.padding(horizontal = dimensionResource(id = R.dimen.space_10dp))
-        ) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(2.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = dimensionResource(id = R.dimen.space_10dp))
+    fun CreateMenuOptions(list: List<JokeOptionsMenu>?, onClickMenuItem: (JokeOptionsMenu) -> Unit) {
+
+        list?.let {
+            Card(
+                shape = RoundedCornerShape(ChuckNorrisApiTheme.dimensions.cardCornerRadius),
+                elevation = ChuckNorrisApiTheme.dimensions.cardElevation,
+                backgroundColor = ChuckNorrisApiTheme.colors.cardBgColor,
+                modifier = Modifier.padding(horizontal = ChuckNorrisApiTheme.dimensions.defaultSpace),
             ) {
-                for((index, item) in list.withIndex()) {
-                    MenuItem(text = item)
-                    if(index != list.size - 1) {
-                        Divider(
-                            color = getColor(color = R.attr.primaryLight),
-                            thickness = dimensionResource(id = R.dimen.line_height)
-                        )
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = ChuckNorrisApiTheme.dimensions.defaultSpace)
+                ) {
+                    for((index, item) in list.withIndex()) {
+                        MenuItem(text = stringResource(id = item.text)) {
+                            onClickMenuItem.invoke(item)
+                        }
+                        if(index != list.size - 1) {
+                            Divider(
+                                color = ChuckNorrisApiTheme.colors.divisorColor,
+                                thickness = ChuckNorrisApiTheme.dimensions.lineHeight
+                            )
+                        }
                     }
                 }
             }
@@ -153,214 +172,98 @@ class JokeOptionsFragment : BaseFragment(), IPositionClick {
     }
 
     @Composable
-    fun CreateTextInput() {
-        var searchText by remember { mutableStateOf(TextFieldValue(String())) }
-
-        TextField(
-            value = searchText,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(dimensionResource(id = R.dimen.space_10dp)),
-            onValueChange = { searchText = it },
-            placeholder = { Text(text = stringResource(id = R.string.search_field_hint))},
-            trailingIcon = {
-                IconButton(onClick = { /*TODO*/ }) {
-                    Icon(painter = painterResource(id = R.drawable.ic_search), contentDescription = null)
+    fun CreateTextInput(value: ChuckSearch?, onValueChange : (String) -> Unit, search: (String) -> Unit) {
+        value ?: return
+        Column {
+            TextField(
+                colors = TextFieldDefaults.textFieldColors(
+                    backgroundColor = ChuckNorrisApiTheme.colors.inputBgColor,
+                    textColor = ChuckNorrisApiTheme.colors.textColor,
+                    placeholderColor = ChuckNorrisApiTheme.colors.textColor,
+                    trailingIconColor = ChuckNorrisApiTheme.colors.iconColor,
+                    focusedIndicatorColor = ChuckNorrisApiTheme.colors.divisorColor,
+                    cursorColor = ChuckNorrisApiTheme.colors.divisorColor,
+                ),
+                value = when(value) {
+                    is ChuckSearch.Invalid -> value.text
+                    is ChuckSearch.Valid -> value.text
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(ChuckNorrisApiTheme.dimensions.defaultSpace),
+                onValueChange = { newValue -> onValueChange(newValue) },
+                placeholder = { Text(text = stringResource(id = R.string.search_field_hint))},
+                trailingIcon = {
+                    when(value) {
+                        is ChuckSearch.Invalid -> {
+                            Icon(painterResource(id = R.drawable.ic_error),null, tint = ChuckNorrisApiTheme.colors.errorColor)
+                        }
+                        is ChuckSearch.Valid -> {
+                            IconButton(onClick = { search(value.text) }) {
+                                Icon(painter = painterResource(id = R.drawable.ic_search), contentDescription = null)
+                            }
+                        }
+                    }
                 }
+            )
+            if(value is ChuckSearch.Invalid) {
+                Text(
+                    text = "Pesquisa inválida",
+                    color = ChuckNorrisApiTheme.colors.errorColor,
+                    style = ChuckNorrisApiTheme.typography.caption,
+                    modifier = Modifier.padding(start = ChuckNorrisApiTheme.dimensions.defaultSpaceBigger)
+                )
             }
-        )
+        }
     }
 
     override fun setupView() {
-//        viewModel.createMenuOptions().observe(viewLifecycleOwner) {
-//            (binding.rvJokeOptionsOptionsList.adapter as DynamicListAdapter).addResList(it)
-//        }
-
-//        binding.rvJokeOptionsOptionsList.apply {
-//            this.layoutManager = LinearLayoutManager(requireContext())
-//            adapter = listAdapter
-//            addItemDecoration(DividerItemDecoration(requireContext(),
-//                (this.layoutManager as LinearLayoutManager).orientation))
-//        }
-
-//        binding.inJokeOptionsTopMenu.btTopMenuTheme.setOnSafeClickListener{ rotateNightTheme { showLoading() } }
-
-//        binding.tlJokeOptionsSearchLayout.setEndIconOnClickListener {
-//            binding.etJokeOptionsSearch.text?.length?.let {
-//                validateSearchQuery(it) {
-//                    goToSearchScreen(binding.etJokeOptionsSearch.text.toString())
-//                }
-//            }
-//        }
-
-//        binding.inJokeOptionsRandomJokeContent.inRandomJokeJokeContent.btJokeContentFavorite
-//            .setOnSafeClickListener {
-//                viewModel.handleFavoriteButtonClick().observe(viewLifecycleOwner) {
-//                    when (it) {
-//                        is ResultChuck.Loading -> showLoading()
-//                        is ResultChuck.Success -> {
-//                            hideLoading()
-//                            handleFavoriteSuccessfulResponse(it.data)
-//                        }
-//                        is ResultChuck.Error -> {
-//                            hideLoading()
-//                            handleError.showError(it.error)
-//                        }
-//                    }
-//                }
-//            }
-
-//        binding.inJokeOptionsRandomJokeContent.inRandomJokeJokeContent.btJokeContentShare
-//            .setOnSafeClickListener {
-//                viewModel.shareJoke().observe(viewLifecycleOwner) {
-//                    ShareJoke(this).create(it).build()
-//                }
-//            }
-
-//        binding.inJokeOptionsRandomJokeContent.btRandomJokeLoadMore.setOnSafeClickListener {
-//            loadJokeFromApi(false)
-//        }
-
-//        networkInfo.result.observe(viewLifecycleOwner) {
-//            binding.inJokeOptionsTopMenu.btTopMenuConnection.isSelected =
-//                it == NetworkStatus.CONNECTED
-//        }
+        viewModel.categoriesResponse.observe(viewLifecycleOwner) {
+            it?.let {
+                when(it) {
+                    is ResultChuck.Error -> handleError.showError(it.error)
+                    is ResultChuck.Loading -> Unit
+                    is ResultChuck.Success -> handleSuccessCategoriesResponse(it.data)
+                }
+            }
+        }
 
         setFragmentResultListener(KEY_SELECTED_CATEGORY) {
                 requestKey, bundle -> viewModel.handleCategoryResult(requestKey,bundle)
             .observe(viewLifecycleOwner) {
                 it?.let {
                     viewModel.updateCategory(it)
-                    loadJokeFromApi(false)
+                    viewModel.getRandomJokeByCategory(false)
                 }
             }
         }
 
-//        viewModel.updateUICategory().observe(viewLifecycleOwner) {
-//            binding.inJokeOptionsRandomJokeContent.tvRandomJokeTitle
-//                .text = getString(R.string.joke_category_title, it.replaceFirstChar { char -> char.uppercase() })
-//        }
-
-        viewModel.updateUIJoke().observe(viewLifecycleOwner) {
-//            binding.inJokeOptionsRandomJokeContent.inRandomJokeJokeContent
-//                .tvJokeContentJoke.text = it.value
-//            binding.inJokeOptionsRandomJokeContent.inRandomJokeJokeContent
-//                .btJokeContentFavorite.isSelected = it.isFavorite
+        viewModel.jokeState.observe(viewLifecycleOwner) {
+            if(it is ResultChuck.Success) {
+                viewModel.updateLastJoke(it.data)
+            }
         }
 
-        loadJokeFromApi(true)
+        viewModel.getRandomJokeByCategory(true)
+        viewModel.createMenuOptions()
     }
 
     override fun onResume() {
         super.onResume()
         networkInfo.registerCallback()
-        startTextChangeListener()
-        viewModel.checkIfJokeIsFavorited()
+        viewModel.checkIfJokeIsFavorite()
     }
 
-    override fun positionClick(position: Int, text: String) {
-        when(position) {
-            Constants.Position.FIRST_POSITION -> {
-                viewModel.getCategoriesFromApi().observe(viewLifecycleOwner) {
-                    when (it) {
-                        is ResultChuck.Success -> {
-                            hideLoading()
-                            handleSuccessCategoriesResponse(it.data)
-                        }
-                        is ResultChuck.Error -> {
-                            hideLoading()
-                            handleError.showError(it.error)
-                        }
-                        is ResultChuck.Loading -> showLoading()
-                    }
-                }
-            }
-            else -> goToFavoritesScreen()
+    private fun handleMenuOptionsClick(item: JokeOptionsMenu) {
+        when (item) {
+            JokeOptionsMenu.CHOOSE_CATEGORY -> viewModel.getCategoriesFromApi()
+            JokeOptionsMenu.SHOW_ALL_FAVORITE_JOKES -> goToFavoritesScreen()
         }
     }
 
     override fun onPause() {
         super.onPause()
         networkInfo.unregisterCallback()
-        clearTextChangeListener()
-    }
-
-    private fun loadJokeFromApi(searchForStateSaved: Boolean) {
-        viewModel.getRandomJokeByCategory(searchForStateSaved).observe(viewLifecycleOwner) {
-            when (it) {
-                is ResultChuck.Loading -> showLoading()
-                is ResultChuck.Success -> {
-                    hideLoading()
-                    viewModel.updateLastJoke(it.data)
-                }
-                is ResultChuck.Error -> {
-                    hideLoading()
-                    handleError.showError(it.error)
-                }
-            }
-        }
-    }
-
-    private fun handleFavoriteSuccessfulResponse(result: Number) {
-        viewModel.updateFavoriteState(result is Long)
-    }
-
-    private fun validateSearchQuery(length: Int, func : (() -> Unit)? = null) =
-        viewModel.isSearchQueryValid(length).observe(viewLifecycleOwner) {
-            when (it) {
-                false -> showSearchFieldInvalid()
-                true -> {
-                    showSearchFieldValid()
-                    func?.invoke()
-                }
-            }
-        }
-
-    private fun startTextChangeListener() {
-//        binding.etJokeOptionsSearch.addTextChangedListener(searchTextWatcher)
-    }
-
-    private fun clearTextChangeListener() {
-//        binding.etJokeOptionsSearch.removeTextChangedListener(searchTextWatcher)
-    }
-
-    private fun showSearchFieldValid() {
-//        binding.tlJokeOptionsSearchLayout.error = null
-    }
-
-    private fun showSearchFieldInvalid() {
-//        binding.tlJokeOptionsSearchLayout.error = getString(R.string.error_too_short_search_query)
-    }
-
-    private fun showLoading() {
-//        binding.inJokeOptionsTopMenu.pbTopMenuLoading.apply {
-//            visibility = View.VISIBLE
-//            show()
-//        }
-
-//        binding.inJokeOptionsRandomJokeContent.apply {
-//            this.slRandomJokeShimmer.showShimmer(true)
-//            this.inRandomJokeJokeContent.tvJokeContentJoke.setBackgroundColor(ContextCompat
-//                .getColor(requireContext(), R.color.text_color_secondary))
-//            this.tvRandomJokeTitle.setBackgroundColor(ContextCompat
-//                .getColor(requireContext(), R.color.text_color_primary))
-//        }
-//        binding.inJokeOptionsRandomJokeContent.llRandomJokeContainer
-//            .children.forEach { it.isEnabled = false }
-    }
-
-    private fun hideLoading() {
-//        binding.inJokeOptionsTopMenu.pbTopMenuLoading.apply {
-//            visibility = View.GONE
-//            hide()
-//        }
-//        binding.inJokeOptionsRandomJokeContent.apply {
-//            this.slRandomJokeShimmer.hideShimmer()
-//            this.inRandomJokeJokeContent.tvJokeContentJoke.setBackgroundColor(Color.TRANSPARENT)
-//            this.tvRandomJokeTitle.setBackgroundColor(Color.TRANSPARENT)
-//        }
-//        binding.inJokeOptionsRandomJokeContent.llRandomJokeContainer
-//            .children.forEach { it.isEnabled = true }
     }
 
     private fun goToFavoritesScreen() {
@@ -376,6 +279,7 @@ class JokeOptionsFragment : BaseFragment(), IPositionClick {
     private fun handleSuccessCategoriesResponse(categories: List<String>) {
         safeNavigate(R.id.jokeOptionsFragment,JokeOptionsFragmentDirections
             .actionJokeOptionsFragmentToJokesCategoriesFragment(categories.toTypedArray()))
+        viewModel.resetCategories()
     }
 }
 

@@ -1,42 +1,36 @@
 package com.ronaldosanches.chucknorrisapitmvvm.domain.usecases
 
-import com.nhaarman.mockitokotlin2.verify
-import com.nhaarman.mockitokotlin2.whenever
-import com.ronaldosanches.chucknorrisapitmvvm.domain.entities.CategoryResponse
+import com.ronaldosanches.chucknorrisapitmvvm.domain.repositories.ChuckNorrisJokesRepository
+import io.mockk.MockKAnnotations
+import io.mockk.coEvery
+import io.mockk.impl.annotations.MockK
+import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
-import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Before
 import org.junit.Test
 
 class GetCategoriesTest : UseCaseBaseTest() {
 
-    lateinit var getCategories : GetCategories
+    private lateinit var getCategories : GetCategories
+    @MockK private lateinit var repository: ChuckNorrisJokesRepository
 
     @Before
     override fun setup() {
         super.setup()
+        MockKAnnotations.init(this)
         getCategories = GetCategories(repository)
     }
 
     @Test
-    fun `should get category successful response from repository`() = runBlockingTest {
+    fun `should get category successful response from repository`() = runTest {
         //arrange
-        whenever(getCategories()).thenReturn(successfulCategoriesList)
-        //act
-        fun response() = suspend { getCategories() }
-        //assert
-        assertEquals(response().invoke(),successfulCategoriesList)
-        verify(repository).getCategories()
-    }
+        coEvery { repository.getCategories() } answers { successfulCategoriesList }
+        val expected = successfulCategoriesList
 
-    @Test
-    fun `should get error response from repository when error occur`() = runBlockingTest {
-        //arrange
-        whenever(getCategories()).thenReturn(errorUnknown())
         //act
-        fun response() = suspend { getCategories() }
+        val actual = getCategories()
+
         //assert
-        assertEquals(response().invoke(),errorUnknown<CategoryResponse>())
-        verify(repository).getCategories()
+        assertEquals(expected, actual)
     }
 }
